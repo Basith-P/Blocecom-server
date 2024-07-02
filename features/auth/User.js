@@ -60,6 +60,6 @@ const userSchema = new Schema({
   ],
 });
 
-userSchema.index({ email: 1 });
+userSchema.index({ email: 1 }, { unique: true });
 
 export default model("User", userSchema);

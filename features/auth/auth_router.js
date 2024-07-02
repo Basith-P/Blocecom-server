@@ -1,17 +1,23 @@
 import { Router } from "express";
+import {
+  forgotPassword,
+  login,
+  resetPassword,
+  signup,
+  verifyOTP,
+} from "./controller.js";
+import { signupValidator } from "./validator.js";
 
 const router = Router();
 
-router.post("/login");
+router.post("/signup", signupValidator, signup);
 
-router.post("/signup");
+router.post("/login", login);
 
-router.post("/logout");
+router.post("/forgot-password", forgotPassword);
 
-router.post("/forgot-password");
+router.post("/veify-otp", verifyOTP);
 
-router.post("/veify-otp");
-
-router.post("/reset-password");
+router.post("/reset-password", resetPassword);
 
 export default router;
