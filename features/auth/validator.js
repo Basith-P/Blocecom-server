@@ -16,3 +16,14 @@ export const signupValidator = [
     ),
   body("phone").isMobilePhone().withMessage("Invalid phone number"),
 ];
+
+export const resetPasswordValidator = [
+  body("email").isEmail().withMessage("Invalid email address"),
+  body("password")
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 6 characters long")
+    .isStrongPassword()
+    .withMessage(
+      "Password must contain at least 1 lowercase, 1 uppercase, 1 number and 1 special character"
+    ),
+];

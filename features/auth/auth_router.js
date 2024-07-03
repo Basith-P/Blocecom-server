@@ -1,13 +1,14 @@
 import { Router } from "express";
+
 import {
-  forgotPassword,
-  login,
-  resetPassword,
   signup,
-  verifyOTP,
+  login,
+  forgotPassword,
+  resetPassword,
   verifyToken,
+  verifyPasswordOTP,
 } from "./controller.js";
-import { signupValidator } from "./validator.js";
+import { resetPasswordValidator, signupValidator } from "./validator.js";
 
 const router = Router();
 
@@ -19,8 +20,8 @@ router.get("/verify-token", verifyToken);
 
 router.post("/forgot-password", forgotPassword);
 
-router.post("/veify-otp", verifyOTP);
+router.post("/veify-otp", verifyPasswordOTP);
 
-router.post("/reset-password", resetPassword);
+router.post("/reset-password", resetPasswordValidator, resetPassword);
 
 export default router;

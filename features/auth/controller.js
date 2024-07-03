@@ -127,9 +127,49 @@ export const forgotPassword = async (req, res) => {
     `Your OTP for resetting password on Blocecom is ${otp}`
   );
 
-  return res.status(200).json({ message: "OTP sent to email" });
+  return res.status(200).json({ msg: "OTP sent to email" });
 };
 
-export const verifyOTP = async (req, res) => {};
+export const verifyPasswordOTP = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const errorsList = convertErrorMessages(errors);
+    return res.status(400).json({ errors: errorsList });
+  }
 
-export const resetPassword = async (req, res) => {};
+  const { email, otp } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  if (user.resetPasswordOtp !== otp)
+    return res.status(401).json({ error: "Invalid OTP" });
+
+  if (user.resetPasswordExpires < new Date())
+    return res.status(401).json({ error: "OTP expired" });
+
+  user.resetPasswordOtp = 1;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+
+  return res.status(200).json({ msg: "OTP verified" });
+};
+
+export const resetPassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const errorsList = convertErrorMessages(errors);
+    return res.status(400).json({ errors: errorsList });
+  }
+
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  if (user.resetPasswordOtp !== 1)
+    return res.status(401).json({ error: "OTP not verified" });
+
+  user.passWordHash = bcrypt.hashSync(password, 8);
+  await user.save();
+
+  return res.status(200).json({ msg: "Password reset successfully" });
+};
