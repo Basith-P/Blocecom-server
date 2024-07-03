@@ -68,6 +68,41 @@ export const login = async (req, res) => {
   return res.status(200).json({ user, accessToken, refreshToken });
 };
 
+export const verifyToken = async (req, res) => {
+  const accessToken = req.headers.authorization.split(" ")[1];
+  if (!accessToken)
+    return res.status(401).json({ error: "Access token not found" });
+
+  const token = await Token.findOne({ accessToken });
+  if (!token) return res.status(404).json({ error: "Token not found" });
+
+  const tokenData = jwt.decode(token.refreshToken);
+  const user = await User.findById(tokenData.id);
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  const isValid = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+  if (isValid) return res.status(200).json({ isValid, user, accessToken });
+
+  const isRefreshTokenValid = jwt.verify(
+    token.refreshToken,
+    process.env.REFRESH_TOKEN_SECRET
+  );
+  if (!isRefreshTokenValid)
+    return res.status(401).json({ error: "Invalid refresh token" });
+
+  const newAccessToken = jwt.sign(
+    { id: user.id, isAdmin: user.isAdmin },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: "1d" }
+  );
+
+  token.accessToken = newAccessToken;
+  token.expiry = new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000);
+  await token.save();
+
+  return res.status(200).json({ user, accessToken: newAccessToken });
+};
+
 export const forgotPassword = async (req, res) => {};
 
 export const verifyOTP = async (req, res) => {};
