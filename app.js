@@ -4,6 +4,7 @@ import "express-async-errors";
 
 import connectDb from "./utils/connect_db.js";
 import router from "./utils/router.js";
+import jwtErrorHandler from "./middlewares/jwt_error_handler.js";
 
 config();
 
@@ -11,6 +12,8 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(jwtErrorHandler);
 
 app.use("/api/v1", router);
 
