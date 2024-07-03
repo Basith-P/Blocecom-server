@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import User from "./User.js";
 import Token from "./Token.js";
 import { convertErrorMessages } from "../../utils/funtions.js";
+import { sendMail } from "../../helpers/email_sender.js";
 
 export const signup = async (req, res) => {
   const errors = validationResult(req);
@@ -103,7 +104,31 @@ export const verifyToken = async (req, res) => {
   return res.status(200).json({ user, accessToken: newAccessToken });
 };
 
-export const forgotPassword = async (req, res) => {};
+export const forgotPassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const errorsList = convertErrorMessages(errors);
+    return res.status(400).json({ errors: errorsList });
+  }
+
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+
+  user.resetPasswordOtp = otp;
+  user.resetPasswordExpires = new Date(new Date().getTime() + 10 * 60000); // 10 minutes
+  await user.save();
+
+  await sendMail(
+    email,
+    "Reset Password OTP",
+    `Your OTP for resetting password on Blocecom is ${otp}`
+  );
+
+  return res.status(200).json({ message: "OTP sent to email" });
+};
 
 export const verifyOTP = async (req, res) => {};
 

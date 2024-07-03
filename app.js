@@ -25,6 +25,10 @@ app.listen(port, () => {
 app.use((err, req, res, next) => {
   console.error(err.message);
 
+  if (err.statusCode) {
+    return res.status(err.statusCode).json({ msg: err.message });
+  }
+
   if (err.message.includes("email_1 dup key"))
     return res.status(400).json({ msg: "Email already exists" });
 

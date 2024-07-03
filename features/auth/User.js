@@ -44,7 +44,7 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    resetPasswordToken: String,
+    resetPasswordOtp: Number,
     resetPasswordExpires: Date,
     wishlist: [
       {
